@@ -113,7 +113,6 @@ var app = builder.Build();
 // Middleware Global de Exceções (RFC 7807)
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-// Swagger liberado também em nuvem (necessário para demonstração da Sprint 4)
 if (!app.Environment.IsEnvironment("Testing"))
 {
     app.UseSwagger();

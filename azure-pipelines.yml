@@ -1,0 +1,137 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  buildConfiguration: 'Release'
+  azureSubscription: 'MyAzureSubscription'
+  apiProject: 'ChallengeNET/ClyvoCare.API.csproj'
+  artifactName: 'app'
+  webAppName: 'clyvocare-api-rm562673'
+
+stages:
+
+# =========================================================
+# CI — Build, testes e artefato
+# =========================================================
+- stage: BuildTestes
+  displayName: 'CI - Build e testes'
+  jobs:
+    - job: BuildTest
+      displayName: 'Compilar e testar API'
+      pool:
+        vmImage: 'windows-latest'
+
+      steps:
+        - checkout: self
+
+        - task: UseDotNet@2
+          displayName: 'Instalar .NET 8'
+          inputs:
+            packageType: 'sdk'
+            version: '8.0.x'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Restaurar dependências'
+          inputs:
+            command: 'restore'
+            projects: '**/*.csproj'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Build da API'
+          inputs:
+            command: 'build'
+            projects: '$(apiProject)'
+            arguments: '--configuration $(buildConfiguration) --no-restore'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Testes unitários e de integração'
+          inputs:
+            command: 'test'
+            projects: '**/*Tests.csproj'
+            arguments: '--configuration $(buildConfiguration) --collect:"XPlat Code Coverage"'
+            testRunTitle: 'Testes ClyvoCare'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Publicar API'
+          inputs:
+            command: 'publish'
+            publishWebProjects: false
+            projects: '$(apiProject)'
+            arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish'
+            zipAfterPublish: false
+            modifyOutputPath: false
+
+        - task: ArchiveFiles@2
+          displayName: 'Compactar aplicação'
+          inputs:
+            rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
+            includeRootFolder: false
+            archiveType: 'zip'
+            archiveFile: '$(Build.ArtifactStagingDirectory)/$(artifactName).zip'
+            replaceExistingArchive: true
+
+        - task: PublishPipelineArtifact@1
+          displayName: 'Publicar artefato'
+          inputs:
+            targetPath: '$(Build.ArtifactStagingDirectory)/$(artifactName).zip'
+            artifact: '$(artifactName)'
+            publishLocation: 'pipeline'
+
+# =========================================================
+# CD — Deploy Azure Web App
+# =========================================================
+- stage: Deploy
+  displayName: 'CD - Deploy no Azure Web App'
+  dependsOn: BuildTestes
+  condition: succeeded()
+
+  jobs:
+    - job: DeployWebApp
+      displayName: 'Implantar API'
+      pool:
+        vmImage: 'windows-latest'
+
+      steps:
+        - checkout: none
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Baixar artefato'
+          inputs:
+            buildType: 'current'
+            artifactName: '$(artifactName)'
+            targetPath: '$(Pipeline.Workspace)/$(artifactName)'
+
+        - task: AzureAppServiceSettings@1
+          displayName: 'Configurar variáveis do App Service'
+          inputs:
+            azureSubscription: '$(azureSubscription)'
+            appName: '$(webAppName)'
+            appSettings: |
+              [
+                {
+                  "name": "ASPNETCORE_ENVIRONMENT",
+                  "value": "$(ASPNETCORE_ENVIRONMENT)",
+                  "slotSetting": false
+                },
+                {
+                  "name": "ConnectionStrings__OracleConnection",
+                  "value": "$(OracleConnection)",
+                  "slotSetting": false
+                },
+                {
+                  "name": "Jwt__Key",
+                  "value": "$(Jwt__Key)",
+                  "slotSetting": false
+                }
+              ]
+
+        - task: AzureWebApp@1
+          displayName: 'Deploy da API'
+          inputs:
+            azureSubscription: '$(azureSubscription)'
+            appType: 'webAppLinux'
+            appName: '$(webAppName)'
+            package: '$(Pipeline.Workspace)/$(artifactName)/$(artifactName).zip'
+            deploymentMethod: 'zipDeploy'

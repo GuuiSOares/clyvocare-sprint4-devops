@@ -26,7 +26,7 @@ A aplicação **ClyvoCare** é uma API REST em **.NET 8 (ASP.NET Core)** para mo
 
 ## 2. Diagrama da Arquitetura + Fluxo CI/CD
 
-> **Status:** diagrama será incluído aqui (com ícones, personas, componentes da stack e etapas numeradas do CI/CD), conforme requisito da Sprint 4 e feedback da Sprint 3.
+> **Status:** diagrama será incluído aqui (ícones, personas, componentes e etapas numeradas do CI/CD).
 
 `docs/diagrama-arquitetura-cicd.png` *(adicionar após criar o desenho)*
 
@@ -66,22 +66,23 @@ A aplicação **ClyvoCare** é uma API REST em **.NET 8 (ASP.NET Core)** para mo
 | Work item process | Scrum ou Agile |
 | Acesso professor | Convite com nível **Basic** |
 
-**Links (preencher):**
+**Links:**
 - GitHub: https://github.com/GuuiSOares/clyvocare-sprint4-devops
-- Azure DevOps: *(colar depois de criar)*
+- Azure DevOps: https://dev.azure.com/Tri-Code/Sprint%204%20%E2%80%93%20Azure%20DevOps
 - YouTube (vídeo): *(colar depois de gravar)*
 
 ---
 
 ## 5. Pipelines CI/CD
 
-- Modo: YAML (padrão das aulas — Semana 19 / Pricewhisper)
+- Modo: YAML
 - Trigger: push na branch **`main`**
 - **CI:** build + testes automáticos + publicação de artefato
 - **CD:** deploy automático no **Azure Web App** após artefato
 - Variáveis sensíveis: `OracleConnection`, `Jwt__Key`, etc. (secret/protegidas)
 
-Arquivo da pipeline: `azure-pipelines.yml` *(será adicionado no próximo passo de infra/pipeline)*
+Arquivo da pipeline: [`azure-pipelines.yml`](azure-pipelines.yml)  
+Script de infra (Web App): [`scripts/criar-infra.sh`](scripts/criar-infra.sh)
 
 ---
 

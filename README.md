@@ -1,216 +1,94 @@
-# 🐾 Clyvo Companion API - Monitoramento Preditivo de Saúde Animal
+# Sprint 4 — DevOps Tools & Cloud Computing
 
-O **Clyvo Companion** é uma plataforma de Backend desenvolvida para revolucionar o acompanhamento veterinário preventivo. Através da coleta e análise de dados biométricos em tempo real, a API permite que tutores e clínicas monitorem sinais vitais de pets, fornecendo uma base estruturada e padronizada para detecção precoce de anomalias e predição de riscos de saúde animal via Machine Learning.
+Entrega DevOps do **ClyvoCare** (API .NET + Oracle FIAP + Azure DevOps CI/CD).
 
----
-
-## 🛠️ Tecnologias & Arquitetura (Sprint 4)
-
-- **Runtime:** .NET 8.0 (C# / ASP.NET Core Web API)
-- **Persistência Híbrida (SQL & NoSQL):**
-  - **Oracle Database:** Persistência relacional transacional (Tutores, Pets, Logs de Saúde) via Entity Framework Core.
-  - **MongoDB:** Persistência NoSQL de alta performance para telemetrias e séries temporais de dispositivos IoT (`PetTelemetriaNoSql`).
-  - **EF Core In-Memory:** Isolamento completo de banco de dados para a execução dos testes de integração.
-- **Padrões Arquiteturais:**
-  - **Repository Pattern:** Desacoplamento entre controladores e fontes de dados com repositório genérico (`IRepository<T>`) e repositório especializado NoSQL (`ITelemetriaMongoRepository`).
-  - **HATEOAS (Hypermedia as the Engine of Application State):** Links hipermídia semânticos nas respostas (`self`, `update_pet`, `delete_pet`, `telemetria_nosql`).
-  - **Paginação Estruturada:** Paginação server-side com filtros, ordenação e metadados (`PageNumber`, `PageSize`, `TotalPages`, `TotalCount`).
-  - **Tratamento Global de Exceções:** Middleware centralizado padronizado no formato **RFC 7807 (`ProblemDetails`)**.
-- **Segurança:** Autenticação e autorização baseadas em **JWT Bearer Tokens**, com rotas de domínio devidamente protegidas (`[Authorize]`).
-- **Documentação Interativa:** Swagger / OpenAPI configurado com suporte à autenticação Bearer Token.
-- **Testes & Qualidade:** xUnit, Moq, FluentAssertions e `Microsoft.AspNetCore.Mvc.Testing` (`WebApplicationFactory`).
-- **Observabilidade & Telemetria:** Serilog (Logging estruturado em arquivo e console), OpenTelemetry (Tracing distribuído W3C e métricas com Prometheus scraping `/metrics`) e ASP.NET Core Health Checks.
+O README da disciplina de .NET fica em [`ChallengeNET/README.md`](ChallengeNET/README.md). Este arquivo na raiz cobre **somente** a Sprint 4 de DevOps.
 
 ---
 
-## 🏛️ Boas Práticas, Clean Code e Princípios SOLID
+## 1. Descrição da solução
 
-A aplicação segue uma divisão de responsabilidades desacoplada e manutenível:
+A aplicação **ClyvoCare** é uma API REST em **.NET 8 (ASP.NET Core)** para monitoramento de saúde animal (tutores, pets e logs de saúde), com CRUD e autenticação JWT.
 
-- **SRP (Single Responsibility Principle):** Controllers lidam exclusivamente com requisições HTTP, roteamento e HATEOAS; Repositórios encapsulam o acesso ao Oracle e MongoDB; Erros não tratados são delegados ao Middleware Global.
-- **OCP (Open/Closed Principle):** Estruturas preparadas para extensão sem modificação do código-base existente (ex.: novos filtros de paginação e provedores de banco de dados).
-- **LSP (Liskov Substitution Principle):** Abstrações e interfaces intercambiáveis (como `IRepository<T>` e `ITelemetriaMongoRepository`) sem quebra de comportamento.
-- **ISP (Interface Segregation Principle):** Interfaces enxutas e focadas estritamente nas responsabilidades do seu domínio.
-- **DIP (Dependency Inversion Principle):** Dependência estrita de abstrações injetadas via contêiner nativo de DI do .NET:
-  * **Scoped:** `AppDbContext`, repositórios relacionais (`IRepository<>`).
-  * **Singleton:** `ITelemetriaMongoRepository`, telemetria do OpenTelemetry e métricas.
-  * **Transient:** Validadores e formatadores leves.
+### Stack utilizada (DevOps / nuvem)
 
----
-
-## 🚦 Health Checks (Monitoramento de Infraestrutura)
-
-A API implementa sondas padronizadas para orquestração de contêineres e observabilidade:
-
-| Endpoint | Tipo de Probe | Descrição |
-| :--- | :--- | :--- |
-| `GET /health/live` | **Liveness Probe** | Valida se a aplicação está em execução e respondendo a requisições HTTP básicas. |
-| `GET /health/ready` | **Readiness Probe** | Valida a integridade e disponibilidade das dependências críticas (ex.: conexão com o Oracle Database). |
+| Camada | Tecnologia |
+|--------|------------|
+| Aplicação | .NET 8 / ASP.NET Core Web API |
+| Banco em nuvem | Oracle Database (Oracle FIAP) |
+| Controle de versão | GitHub |
+| CI/CD | Azure DevOps Pipelines |
+| Deploy | Azure Web App |
+| Segredos | Variáveis protegidas do Azure DevOps (connection string, JWT) |
+| Testes no CI | xUnit (unitários + integração) |
 
 ---
 
-## 📊 Observabilidade & Telemetria
+## 2. Diagrama da Arquitetura + Fluxo CI/CD
 
-- **Serilog Estruturado:** Geração diária de logs em `Logs/clyvocare-.log` e console, enriquecidos com contexto de thread, máquina e correlation IDs.
-- **OpenTelemetry Tracing:** Rastreamento ponta a ponta com instrumentação nativa do ASP.NET Core e HttpClient.
-- **Métricas Prometheus:** Exposição de métricas de telemetria no endpoint `/metrics`.
+> **Status:** diagrama será incluído aqui (com ícones, personas, componentes da stack e etapas numeradas do CI/CD), conforme requisito da Sprint 4 e feedback da Sprint 3.
+
+`docs/diagrama-arquitetura-cicd.png` *(adicionar após criar o desenho)*
+
+### Personas
+- **Desenvolvedor:** altera código, faz push na `main`
+- **Azure DevOps:** executa CI/CD
+- **Usuário final:** consome a API no Azure Web App
+- **Professor:** acessa o projeto Azure DevOps (Basic) e o vídeo
+
+### Fluxo CI/CD (ordem)
+
+1. Push na branch `main` (GitHub)
+2. Trigger automático da Pipeline (Azure DevOps)
+3. **CI:** restore → build → testes → publicar artefato
+4. **CD:** configura variáveis no Web App → deploy do artefato
+5. Aplicação atualizada no **Azure Web App**, conectada ao **Oracle FIAP**
 
 ---
 
-## 🔐 Autenticação e Segurança (JWT)
+## 3. Banco de Dados em Nuvem
 
-A API utiliza tokens **JWT (JSON Web Token)** para proteção das rotas sensíveis:
+- **Tipo:** Oracle (serviço Oracle da FIAP) — permitido no edital
+- **Uso na app:** Entity Framework Core (`ConnectionStrings:OracleConnection`)
+- **Segredo:** connection string **não** fica no repositório; vai nas variáveis protegidas da pipeline / App Settings do Web App
 
-1. Realize uma requisição `POST /api/Auth/login` enviando e-mail e senha cadastrados.
-2. Copie o token retornado na propriedade `token`.
-3. No **Swagger**, clique no botão **Authorize** (cadeado no canto superior direito) e informe seu token :
+---
 
-   As rotas protegidas por [Authorize] (como Pets e TelemetriaPet) estarão autorizadas para consumo.
+## 4. Azure DevOps
 
-## 📖 Documentação dos Endpoints Principais
+| Campo | Valor |
+|-------|--------|
+| Project Name | `Sprint 4 – Azure DevOps` |
+| Description | Projeto para entrega da Sprint 4 do professor *(preencher nome)* |
+| Integrantes | RM562673 - Geovanne Coneglian Passos; RM563960 - Lucas Silva Gastão Pinheiro; RM563143 - Guilherme Soares De Almeida |
+| Visibility | Private |
+| Version control | Git (código no GitHub; pipeline conectada ao repo) |
+| Work item process | Scrum ou Agile |
+| Acesso professor | Convite com nível **Basic** |
 
-## 🔑 Autenticação
+**Links (preencher):**
+- GitHub: https://github.com/GuuiSOares/clyvocare-sprint4-devops
+- Azure DevOps: *(colar depois de criar)*
+- YouTube (vídeo): *(colar depois de gravar)*
 
-POST /api/Auth/login: Autentica o tutor e devolve o Token JWT com tempo de expiração.
+---
 
-## 👤 Usuários (Tutores)
+## 5. Pipelines CI/CD
 
-GET /api/Usuarios: Lista todos os tutores cadastrados.
+- Modo: YAML (padrão das aulas — Semana 19 / Pricewhisper)
+- Trigger: push na branch **`main`**
+- **CI:** build + testes automáticos + publicação de artefato
+- **CD:** deploy automático no **Azure Web App** após artefato
+- Variáveis sensíveis: `OracleConnection`, `Jwt__Key`, etc. (secret/protegidas)
 
-GET /api/Usuarios/{id}: Busca um tutor por ID.
+Arquivo da pipeline: `azure-pipelines.yml` *(será adicionado no próximo passo de infra/pipeline)*
 
-POST /api/Usuarios: Cadastra um novo tutor.
+---
 
-PUT /api/Usuarios/{id}: Atualiza os dados de um tutor.
+## 6. Integrantes
 
-DELETE /api/Usuarios/{id}: Remove um tutor.
-
-## 🐶 Pets (Com HATEOAS, Paginação e [Authorize])
-
-GET /api/Pets: Lista paginada de animais (pageNumber, pageSize, searchTerm) acompanhada de hiperlinks HATEOAS.
-
-GET /api/Pets/{id}: Busca detalhada do pet com links de navegação (self, update_pet, delete_pet, logs_saude, telemetria_nosql).
-
-POST /api/Pets: Registra um novo animal vinculado a um tutor.
-
-PUT /api/Pets/{id}: Atualiza os dados cadastrais do pet.
-
-DELETE /api/Pets/{id}: Remove o animal.
-
-## 🩺 Logs de Saúde (Sensores Relacionais - Oracle)
-
-POST /api/LogsSaude: Persiste leituras biométricas estruturadas com validações estritas ([Range]).
-
-GET /api/LogsSaude/pet/{petId}: Histórico de medições do animal ordenado cronologicamente.
-
-## 📡 Telemetria IoT (Persistência NoSQL - MongoDB)
-
-POST /api/TelemetriaPet: Registra telemetrias de sensores em alta frequência (temperatura, batimentos e alertas) no MongoDB.
-
-GET /api/TelemetriaPet/pet/{petId}: Consulta o histórico de telemetrias NoSQL registradas para o pet.
-
-## 📋 Exemplos de Payloads (JSON)
-
-1. Login (POST /api/Auth/login)
-
-{
-  "email": "carlos.tutor@email.com",
-  "senha": "mypassword123"
-}
-
-2. Cadastro de Usuário (POST /api/Usuarios)
-
-{
-  "nome": "Carlos Andrade",
-  "email": "carlos.tutor@email.com",
-  "senha": "mypassword123"
-}
-
-3. Cadastro de Pet (POST /api/Pets)
-
- {
-  "nome": "Thor",
-  "especie": "Cachorro",
-  "dataNascimento": "2022-04-15",
-  "usuarioId": 1
-}
-
-4. Telemetria NoSQL (POST /api/TelemetriaPet)
-
-{
-  "petId": 1,
-  "temperatura": 38.5,
-  "batimentos": 110,
-  "statusAlerta": "Normal"
-}
-
-## 🧪 Estratégia de Testes Automatizados
-
-A solução conta com cobertura completa em duas frentes:
-
-1. Testes Unitários (ClyvoCare.UnitTests)
-
-Padrão AAA (Arrange, Act, Assert).
-
-Isolamento com Moq sobre IRepository<Pet> e serviços de log.
-
-Cobertura de rotas, respostas HATEOAS e validação de regras de domínio.
-
-2. Testes de Integração (ClyvoCare.IntegrationTests)
-
-Execução ponta a ponta via WebApplicationFactory<Program>.
-
-Injeção automática de Bearer Token nos cabeçalhos HTTP.
-
-Isolamento com EF Core In-Memory Database descartável por execução.
-
-Verificação de Health Checks e códigos de status HTTP (200 OK, 201 Created).
-
-## ⚙️ Como Rodar os Testes no Terminal
-
-Na raiz da solução:
-
-# Executa todos os testes unitários e de integração
-dotnet test
-
-## 🚀 Como Executar a API
-
-### 1. Pré-requisitos
-
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-
-- Instância do MongoDB em execução local (`mongodb://localhost:27017`) ou via Docker:
-
-  docker run -d -p 27017:27017 --name mongodb mongo:latest
-
-## 2. Executar a Aplicação
-
-Pelo Visual Studio:
-
-Abra a solução ClyvoCare.API.sln (ou ChallengeNET.sln).
-
-Certifique-se de que o perfil de inicialização está em https ou ClyvoCare.API.
-
-## Pelo Terminal:
-
-No terminal, na pasta raiz da solução, execute:
-
-dotnet run --project ChallengeNET
-
-## 3. Acessar a Documentação Interativa (Swagger)
-
-Abra o navegador no endereço:
-👉 https://localhost:7290/swagger (ou http://localhost:5145/swagger)
-
-Prima Ctrl + F5 (o navegador abrirá a página do Swagger automaticamente).
-
-## ✒️ Integrantes
-
-Geovanne Coneglian Passos - RM: 562673
-
-Lucas Silva Gastão Pinheiro - RM: 563960
-
-Guilherme Soares De Almeida - RM: 563143
-
-
-
+| Nome | RM |
+|------|-----|
+| Geovanne Coneglian Passos | 562673 |
+| Lucas Silva Gastão Pinheiro | 563960 |
+| Guilherme Soares De Almeida | 563143 |

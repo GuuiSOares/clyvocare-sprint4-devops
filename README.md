@@ -26,9 +26,9 @@ A aplicação **ClyvoCare** é uma API REST em **.NET 8 (ASP.NET Core)** para mo
 
 ## 2. Diagrama da Arquitetura + Fluxo CI/CD
 
-> **Status:** diagrama será incluído aqui (ícones, personas, componentes e etapas numeradas do CI/CD).
+![ClyvoCare - Arquitetura Azure + CI/CD](docs/diagrama-arquitetura-cicd.jpg)
 
-`docs/diagrama-arquitetura-cicd.png` *(adicionar após criar o desenho)*
+Push na `main` dispara CI/CD no Azure DevOps; o artefato é publicado no Azure Web App; a API usa Oracle FIAP via variáveis protegidas.
 
 ### Personas
 - **Desenvolvedor:** altera código, faz push na `main`
@@ -59,7 +59,7 @@ A aplicação **ClyvoCare** é uma API REST em **.NET 8 (ASP.NET Core)** para mo
 | Campo | Valor |
 |-------|--------|
 | Project Name | `Sprint 4 – Azure DevOps` |
-| Description | Projeto para entrega da Sprint 4 do professor *(preencher nome)* |
+| Description | Projeto para entrega da Sprint 4 do professor João Menk |
 | Integrantes | RM562673 - Geovanne Coneglian Passos; RM563960 - Lucas Silva Gastão Pinheiro; RM563143 - Guilherme Soares De Almeida |
 | Visibility | Private |
 | Version control | Git (código no GitHub; pipeline conectada ao repo) |

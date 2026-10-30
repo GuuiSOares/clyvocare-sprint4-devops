@@ -38,7 +38,11 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddSingleton<ITelemetriaMongoRepository, TelemetriaMongoRepository>();
 
 // 4. Autenticação e Autorização JWT
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "ClyvoCareSecretKeyMuitoSeguraParaSprint4DotNet2026";
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    jwtKey = "ClyvoCareSecretKeyMuitoSeguraParaSprint4DotNet2026";
+}
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>

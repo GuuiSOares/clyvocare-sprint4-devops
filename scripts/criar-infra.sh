@@ -3,7 +3,7 @@
 RESOURCE_GROUP_NAME="rg-clyvocare-api"
 WEBAPP_NAME="clyvocare-api-rm562673"
 APP_SERVICE_PLAN="plan-clyvocare-api"
-LOCATION="brazilsouth"
+LOCATION="eastus2"
 RUNTIME="DOTNETCORE:8.0"
 APP_INSIGHTS_NAME="ai-clyvocare-api"
 

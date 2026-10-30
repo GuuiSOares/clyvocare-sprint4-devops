@@ -42,15 +42,13 @@ public class EndpointsIntegrationTests : IClassFixture<CustomWebApplicationFacto
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        var tokenString = tokenHandler.WriteToken(token);
-
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+        _client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", tokenHandler.WriteToken(token));
     }
 
     [Fact]
     public async Task PostUsuario_PayloadValido_RetornaCreated()
     {
-        // Arrange
         var usuarioDto = new UsuarioCreateDTO
         {
             Nome = "Tutor Integracao",
@@ -58,49 +56,78 @@ public class EndpointsIntegrationTests : IClassFixture<CustomWebApplicationFacto
             Senha = "senhaForte123"
         };
 
-        // Act
         var response = await _client.PostAsJsonAsync("/api/Usuarios", usuarioDto);
 
-        // Assert
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task PostLogSaude_PayloadValido_RetornaCreated()
-    {
-        // Arrange
-        var logDto = new LogSaudeCreateDTO
-        {
-            PetId = 1,
-            Peso = 10.5m,
-            Temperatura = 38.8m,
-            BatimentosCardiacos = 115,
-            Observacoes = "Teste de integracao IoT"
-        };
-
-        // Act
-        var response = await _client.PostAsJsonAsync("/api/LogsSaude", logDto);
-
-        // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 
     [Fact]
     public async Task PostPet_ComTokenValido_RetornaCreated()
     {
-        // Arrange
+        var usuarioDto = new UsuarioCreateDTO
+        {
+            Nome = "Tutor Pet",
+            Email = $"tutor_pet_{Guid.NewGuid()}@teste.com",
+            Senha = "senhaForte123"
+        };
+
+        var usuarioResponse = await _client.PostAsJsonAsync("/api/Usuarios", usuarioDto);
+        Assert.Equal(HttpStatusCode.Created, usuarioResponse.StatusCode);
+        var usuario = await usuarioResponse.Content.ReadFromJsonAsync<Usuario>();
+        Assert.NotNull(usuario);
+
         var petDto = new PetCreateDTO
         {
             Nome = "Pipoca",
             Especie = "Felino",
             DataNascimento = DateTime.Now.AddYears(-1),
-            UsuarioId = 1
+            UsuarioId = usuario!.Id
         };
 
-        // Act
         var response = await _client.PostAsJsonAsync("/api/Pets", petDto);
 
-        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostLogSaude_PayloadValido_RetornaCreated()
+    {
+        var usuarioDto = new UsuarioCreateDTO
+        {
+            Nome = "Tutor Log",
+            Email = $"tutor_log_{Guid.NewGuid()}@teste.com",
+            Senha = "senhaForte123"
+        };
+
+        var usuarioResponse = await _client.PostAsJsonAsync("/api/Usuarios", usuarioDto);
+        var usuario = await usuarioResponse.Content.ReadFromJsonAsync<Usuario>();
+        Assert.NotNull(usuario);
+
+        var petDto = new PetCreateDTO
+        {
+            Nome = "Thor",
+            Especie = "Cachorro",
+            DataNascimento = DateTime.Now.AddYears(-2),
+            UsuarioId = usuario!.Id
+        };
+
+        var petResponse = await _client.PostAsJsonAsync("/api/Pets", petDto);
+        Assert.Equal(HttpStatusCode.Created, petResponse.StatusCode);
+
+        var hateoas = await petResponse.Content.ReadFromJsonAsync<HateoasResponse<Pet>>();
+        Assert.NotNull(hateoas?.Data);
+
+        var logDto = new LogSaudeCreateDTO
+        {
+            PetId = hateoas!.Data.Id,
+            Peso = 10.5m,
+            Temperatura = 38.8m,
+            BatimentosCardiacos = 115,
+            Observacoes = "Teste de integracao IoT"
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/LogsSaude", logDto);
+
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 }

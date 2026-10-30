@@ -87,7 +87,12 @@ public class PetsController : ControllerBase
             return NotFound();
         }
 
-        await _petRepository.UpdateAsync(pet);
+        existente.Nome = pet.Nome;
+        existente.Especie = pet.Especie;
+        existente.DataNascimento = pet.DataNascimento;
+        existente.UsuarioId = pet.UsuarioId;
+
+        await _petRepository.UpdateAsync(existente);
         _logger.LogInformation("Pet {PetId} atualizado com sucesso.", id);
         return NoContent();
     }

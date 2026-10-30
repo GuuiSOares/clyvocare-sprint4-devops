@@ -72,7 +72,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ClyvoCare API", Version = "v1", Description = "API Clyvo Care - Sprint 4" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ClyvoCare API", Version = "v1", Description = "API Clyvo Care - Demo CI/CD" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Insira o token JWT desta forma: Bearer {seu_token}",

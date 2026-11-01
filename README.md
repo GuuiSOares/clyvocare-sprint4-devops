@@ -64,12 +64,12 @@ Push na `main` dispara CI/CD no Azure DevOps; o artefato é publicado no Azure W
 | Visibility | Private |
 | Version control | Git (código no GitHub; pipeline conectada ao repo) |
 | Work item process | Scrum ou Agile |
-| Acesso professor | Convite com nível **Basic** |
+| Acesso professor | Convite com nível **Basic** (+ Project Administrator) |
 
 **Links:**
 - GitHub: https://github.com/GuuiSOares/clyvocare-sprint4-devops
 - Azure DevOps: https://dev.azure.com/Tri-Code/Sprint%204%20%E2%80%93%20Azure%20DevOps
-- YouTube (vídeo): *(colar depois de gravar)*
+- YouTube (vídeo): https://www.youtube.com/watch?v=NcKW5c9e7Oc
 
 ---
 
